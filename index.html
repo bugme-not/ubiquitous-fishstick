@@ -1899,6 +1899,7 @@ let allnetMode = false;
         let selectedTransport = null;
         let selectedProtocol = 'vless';
         let cloudRunHost = null; 
+        let deployedServers = [];
         let transportGlowTimer;
         const configTemplates = {
             websocket: {
@@ -1977,51 +1978,94 @@ let allnetMode = false;
     addLog('Loading latest server list...');
 
     try {
-        const res = await fetch(MASTER_LIST_URL + '?t=' + Date.now());
+        const res = await fetch(MASTER_LIST_URL + '?t=' + Date.now(), {
+            cache: 'no-store'
+        });
 
         if (!res.ok) {
-            throw new Error('Failed');
+            throw new Error('Failed to load server list');
         }
-        const data = await res.json();
-        deployedServers = data.deployed_servers || [];
-        const currentHost = location.hostname;
 
-        if (
-            currentHost.includes('.run.app') &&
-            !deployedServers.includes(currentHost)
-        ) {
-            deployedServers.push(currentHost);
-        }
+        const data = await res.json();
+
+        deployedServers = Array.isArray(data.deployed_servers)
+            ? data.deployed_servers
+            : [];
+
+        await detectCloudRunHost();
+
+        updateConfigOutput();
 
         addLog('Server list updated successfully.');
-
-detectCloudRunHost();
-updateConfigOutput();
-
     } catch (error) {
-
         addLog('Failed to load server list.');
 
+        await detectCloudRunHost();
+
+        updateConfigOutput();
     }
 }
-
         async function detectCloudRunHost() {
-            try {
-                const currentHost = window.location.hostname;
-                if (currentHost && currentHost.includes('.run.app')) {
-                    cloudRunHost = currentHost;
-                    addLog('Current server host detected');
-                    updateConfigOutput();
-                    return currentHost;
-                } else {
-                    cloudRunHost = null;
-                    return null;
-                }
-            } catch (err) {
-                cloudRunHost = null;
-                return null;
-            }
+    try {
+        const currentHost = window.location.hostname;
+
+        if (currentHost && currentHost.endsWith('.run.app')) {
+            cloudRunHost = currentHost;
+            addLog(`Cloud Run host detected → ${cloudRunHost}`);
+            return cloudRunHost;
         }
+
+        try {
+            const statusRes = await fetch(
+                BACKEND_ENDPOINT + '?t=' + Date.now(),
+                {
+                    cache: 'no-store'
+                }
+            );
+
+            if (statusRes.ok) {
+                const statusData = await statusRes.json();
+
+                const backendHost =
+                    statusData.cloud_run_host ||
+                    statusData.cloudRunHost ||
+                    statusData.run_app_host ||
+                    statusData.runAppHost ||
+                    null;
+
+                if (
+                    typeof backendHost === 'string' &&
+                    backendHost.endsWith('.run.app')
+                ) {
+                    cloudRunHost = backendHost;
+                    addLog(`Cloud Run host detected → ${cloudRunHost}`);
+                    return cloudRunHost;
+                }
+            }
+        } catch (error) {
+        }
+
+        const runAppHost = deployedServers.find(host =>
+            typeof host === 'string' &&
+            host.endsWith('.run.app')
+        );
+
+        if (runAppHost) {
+            cloudRunHost = runAppHost;
+            addLog(`Cloud Run host detected → ${cloudRunHost}`);
+            return cloudRunHost;
+        }
+
+        cloudRunHost = null;
+        addLog('Cloud Run host could not be detected');
+        return null;
+
+    } catch (error) {
+        cloudRunHost = null;
+        addLog('Cloud Run host detection failed');
+        return null;
+    }
+}
 
         function formatElapsedTime() {
             const elapsed = Math.floor((Date.now() - pageLoadTime) / 1000);
@@ -2070,7 +2114,7 @@ updateConfigOutput();
         }
 
         document.addEventListener('DOMContentLoaded', () => {
-    scaleDashboard();
+   scaleDashboard();
     setTimeout(() => {
         page1.classList.remove('active');
         page3.classList.add('active');
@@ -2084,9 +2128,9 @@ updateConfigOutput();
                 updateLiveUptime();
                 setInterval(updateLiveUptime, 1000);
                 detectCloudRunHost();
-                fetchAllServers();
-                addLog('Server Status: READY');
-                updateConfigOutput();
+fetchAllServers();
+addLog('Server Status: READY');
+updateConfigOutput();
                 scaleDashboard();
             }, 1800);
         });
@@ -2368,15 +2412,22 @@ clearTimeout(transportGlowTimer);
         return;
     }
 
-    const selectedAddress = addressSelect.value;
-    const selectedSni = sniSelect.value;
-    const activeHostParam = cloudRunHost;
+   const selectedAddress = addressSelect.value;
+const selectedSni = sniSelect.value;
+const activeHostParam = cloudRunHost || '';
+       
 
     if (!selectedTransport || !selectedProtocol) {
-        configOutput.textContent =
-            'Select Transport and Protocol to generate config';
-        return;
-    }
+    configOutput.textContent =
+        'Select Transport and Protocol to generate config';
+    return;
+}
+
+if (!activeHostParam) {
+    configOutput.textContent =
+        'Server host is not available yet';
+    return;
+}
 
     let template =
         configTemplates[selectedTransport][selectedProtocol];
@@ -2485,6 +2536,7 @@ clearTimeout(transportGlowTimer);
 
         addLog('Could not retrieve visitor geolocation');
     }
+
 
 try {
                 const res = await fetch(BACKEND_ENDPOINT);
