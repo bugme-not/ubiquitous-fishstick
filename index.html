@@ -990,6 +990,59 @@ filter: none !important;
     margin-bottom: 4px;
     width: 100%;
 }
+      .proxy-allnet-row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 8px;
+    align-items: end;
+    margin-bottom: 4px;
+    width: 100%;
+}
+
+.proxy-container {
+    min-width: 0;
+}
+
+.proxy-container label {
+    display: block;
+    margin-bottom: 0.25vh;
+    font-size: clamp(0.65rem, 1.6vh, 0.9rem);
+    opacity: 0.9;
+}
+
+.allnet-btn {
+    min-width: 125px;
+    height: 100%;
+    min-height: 30px;
+    padding: 0.4vh 12px;
+    background: var(--glass);
+    border: 1px solid var(--glass-border);
+    border-radius: 6px;
+    color: var(--white);
+    font-size: clamp(0.65rem, 1.6vh, 0.9rem);
+    font-weight: 500;
+    cursor: pointer;
+    transition: var(--transition);
+    -webkit-tap-highlight-color: transparent;
+    outline: none;
+    white-space: nowrap;
+}
+
+.allnet-btn:hover {
+    border-color: var(--glow);
+    background: rgba(100, 200, 255, 0.08);
+    box-shadow: 0 0 15px var(--glow);
+}
+
+.allnet-btn:active {
+    transform: scale(0.97);
+}
+
+.allnet-btn.active {
+    border-color: var(--glow);
+    background: rgba(100, 200, 255, 0.12);
+    box-shadow: 0 0 20px var(--glow);
+}
         .dropdown-container label {
             display: block;
             margin-bottom: 0.25vh;
@@ -1731,6 +1784,26 @@ body {
                     </select>
                 </div>
             </div>
+                               <div class="proxy-allnet-row">
+
+                <div class="proxy-container">
+                    <label>Proxy Selection</label>
+                    <select id="proxySelect" disabled>
+                        <option value="31.13.64.39:8080">31.13.64.39:8080</option>
+                        <option value="157.240.211.38:8080">157.240.211.38:8080</option>
+                        <option value="57.144.120.4:8080">57.144.120.4:8080</option>
+                        <option value="157.240.9.39:8080">157.240.9.39:8080</option>
+                    </select>
+                </div>
+
+                <button
+                    type="button"
+                    class="allnet-btn"
+                    id="allnetBtn">
+                    ALLNET
+                </button>
+
+            </div>
 
                         <div class="config-box" id="configOutput"></div>
             <button class="copy-btn" id="copyConfigBtn">COPY CONFIG</button>
@@ -1793,7 +1866,9 @@ const elISP = document.getElementById('visitorISP');
         const copyConfigBtn = document.getElementById('copyConfigBtn');
         const addressSelect = document.getElementById('addressSelect');
         const sniSelect = document.getElementById('sniSelect');
-     
+      const proxySelect = document.getElementById('proxySelect');
+const allnetBtn = document.getElementById('allnetBtn');
+let allnetMode = false;
         
         const transportCards = document.querySelectorAll('[data-transport]');
         const protocolCards = document.querySelectorAll('[data-protocol]');
@@ -1844,6 +1919,10 @@ const elISP = document.getElementById('visitorISP');
                 shadowsocks: 'ss://Y2hhY2hhMjAtaWV0Zi1wb2x5MTMwNTpDeGx2aW43Nzc=@{{ADDRESS}}:443?type=xhttp&host={{SELECTED_HOST}}&headerType=auto&path=%2FCxlvinSSXH%3Fed%3D2560&security=tls&sni={{SNI}}#CxlvinSSXH - use default dns',
                 vmess: 'vmess://{{VMESS_XH}}'
             }
+        };
+          const allnetTemplates = {
+    vless: 'darktunnel://eyJ0eXBlIjoiVkxFU1MiLCJuYW1lIjoiS1NfTk5FVF9DSEFOTkVMIiwidmxlc3NUdW5uZWxDb25maWciOnsidjJyYXlDb25maWciOnsiaG9zdCI6InphaW4uYmxvZ2Jsb2cuY29tIiwicG9ydCI6NDQzLCJ1dWlkIjoiY3hsdmluNzc3Iiwic2VydmVyTmFtZUluZGljYXRpb24iOiJ6YWluLmJsb2dibG9nLmNvbSIsIndzUGF0aCI6Ii9DeGx2aW5WbFdTIn0sImluamVjdENvbmZpZyI6eyJlbmFibGVkIjp0cnVlLCJtb2RlIjoiUFJPWFkiLCJwcm94eUhvc3QiOiIzMS4xMy42NC4zOSIsInBheWxvYWQiOiJDT05ORUNUIHphaW4uYmxvZ2Jsb2cuY29tOjQ0MyBIVFRQLzEuMVtjcmxmXXgtY29ubmVjdGVkLXRvOiBpb3JnLWZiYS1lZGdlLXNodi0wMi1tbmwxLmZhY2Vib29rLmNvbSBbY3JsZl11c2VyLWFnZW50OiBGQkFWLzAuMC4wW2NybGZdeC1pb3JnLWJzaWQ6IEBDeGx2aW43NzdbY3JsZl1bY3JsZl0ifX19',
+    trojan: 'darktunnel://eyJ0eXBlIjoiVFJPSkFOIiwibmFtZSI6IkRlZmF1bHQiLCJ0cm9qYW5UdW5uZWxDb25maWciOnsidjJyYXlDb25maWciOnsiaG9zdCI6InJvYmkuZmFjZW1hcnNoYWwuY29tIiwicG9ydCI6NDQzLCJ1dWlkIjoiQ3hsdmluNzc3IiwidHJhbnNwb3J0TmV0d29yayI6IldlYnNvY2tldCIsInNlcnZlck5hbWVJbmRpY2F0aW9uIjoiemFpbi5ibG9nYmxvZy5jb20iLCJ3c1BhdGgiOiIvQ3hsdmluVFJXUyJ9LCJpbmplY3RDb25maWciOnsiZW5hYmxlZCI6dHJ1ZSwibW9kZSI6IlBST1hZIiwicHJveHlIb3N0IjoiMTU3LjI0MC4yMTEuMzgiLCJwYXlsb2FkIjoiQ09OTkVDVCB6YWluLmJsb2dibG9nLmNvbTo0NDMgSFRUUC8xLjFbY3JsZl14LWNvbm5lY3RlZC10bzogaW9yZy1mYmEtZWRnZS1zaHYtMDItbW5sMS5mYWNlYm9vay5jb20gW2NybGZddXNlci1hZ2VudDogRkJBVi8wLjAuMFtjcmxmXXgtaW9yZy1ic2lkOiBAQ3hsdmluNzc3W2NybGZdW2NybGZdIn19fQ=='
         };
 
         const vmessBase = {
@@ -1903,11 +1982,8 @@ const elISP = document.getElementById('visitorISP');
         if (!res.ok) {
             throw new Error('Failed');
         }
-
         const data = await res.json();
-
         deployedServers = data.deployed_servers || [];
-
         const currentHost = location.hostname;
 
         if (
@@ -1960,22 +2036,16 @@ updateConfigOutput();
             elLog.innerHTML = logEntries.join('');
             elLog.scrollTop = elLog.scrollHeight;
         }
-        clearLogBtn.addEventListener('click', () => {
-
+       clearLogBtn.addEventListener('click', () => {
     if (elLog.classList.contains('clearing')) return;
-
     clearLogBtn.classList.add('clearing');
     elLog.classList.add('clearing');
 
     setTimeout(() => {
-
         logEntries = [];
         elLog.innerHTML = '';
-
         elLog.classList.remove('clearing');
-
         clearLogBtn.classList.remove('clearing');
-
         addLog('Server event log cleared.');
 
     }, 450);
@@ -2001,12 +2071,9 @@ updateConfigOutput();
 
         document.addEventListener('DOMContentLoaded', () => {
     scaleDashboard();
-
     setTimeout(() => {
-
         page1.classList.remove('active');
         page3.classList.add('active');
-
         scaleDashboard();
                 
                 addLog('System Initializing...');
@@ -2023,7 +2090,6 @@ updateConfigOutput();
                 scaleDashboard();
             }, 1800);
         });
-
         transportCards.forEach(card => {
             card.addEventListener('click', () => {
                 transportCards.forEach(c => c.classList.remove('selected'));
@@ -2039,18 +2105,50 @@ updateConfigOutput();
                 updateConfigOutput();
             });
         });
-
         protocolCards.forEach(card => {
-            card.addEventListener('click', () => {
-                protocolCards.forEach(c => c.classList.remove('selected'));
-                card.classList.add('selected');
-                selectedProtocol = card.dataset.protocol;
-                addLog(`Protocol Selected → ${selectedProtocol.toUpperCase()}`);
-                clearTimeout(transportGlowTimer);
-                updateConfigOutput();
+    card.addEventListener('click', () => {
+
+        const protocol = card.dataset.protocol;
+
+        if (allnetMode) {
+            if (protocol !== 'vless' && protocol !== 'trojan') {
+                return;
+            }
+
+            protocolCards.forEach(c => {
+                c.classList.remove('selected');
             });
+
+            card.classList.add('selected');
+
+            selectedProtocol = protocol;
+
+            addLog(
+                `ALLNET Protocol Selected → ${selectedProtocol.toUpperCase()}`
+            );
+
+            updateConfigOutput();
+
+            return;
+        }
+
+        protocolCards.forEach(c => {
+            c.classList.remove('selected');
         });
 
+        card.classList.add('selected');
+
+        selectedProtocol = protocol;
+
+        addLog(
+            `Protocol Selected → ${selectedProtocol.toUpperCase()}`
+        );
+
+        clearTimeout(transportGlowTimer);
+
+        updateConfigOutput();
+    });
+});
         addressSelect.addEventListener('change', () => {
             addLog(`Address changed → ${addressSelect.value}`);
             updateConfigOutput();
@@ -2059,7 +2157,50 @@ updateConfigOutput();
             addLog(`SNI changed → ${sniSelect.value}`);
             updateConfigOutput();
         });
+       proxySelect.addEventListener('change', () => {
+    addLog(`Proxy changed → ${proxySelect.value}`);
+    updateConfigOutput();
+});
+        allnetBtn.addEventListener('click', () => {
+    setAllnetMode();
+});
+      function setAllnetMode() {
+    allnetMode = true;
 
+    allnetBtn.classList.add('active');
+
+    addressSelect.disabled = true;
+    sniSelect.disabled = true;
+    proxySelect.disabled = false;
+
+    selectedProtocol = null;
+    selectedTransport = null;
+
+    transportCards.forEach(card => {
+        card.classList.remove('selected');
+        card.style.pointerEvents = 'none';
+        card.style.opacity = '0.35';
+    });
+
+    protocolCards.forEach(card => {
+        const protocol = card.dataset.protocol;
+
+        card.classList.remove('selected');
+
+        if (protocol === 'vless' || protocol === 'trojan') {
+            card.style.pointerEvents = 'auto';
+            card.style.opacity = '1';
+        } else {
+            card.style.pointerEvents = 'none';
+            card.style.opacity = '0.35';
+        }
+    });
+
+    addLog('ALLNET MODE ENABLED');
+
+    configOutput.textContent =
+        'Select Vless or Trojan to generate ALLNET config';
+}
         copyConfigBtn.addEventListener('click', async () => {
             const text = configOutput.textContent;
 
@@ -2084,13 +2225,30 @@ updateConfigOutput();
             }, 2000);
 
             document.querySelectorAll('.protocol-card').forEach(card => {
-                card.classList.remove('selected');
-            });
+    card.classList.remove('selected');
 
-            selectedTransport = null;
-            selectedProtocol = null;
-            clearTimeout(transportGlowTimer);
-        });
+    card.style.pointerEvents = 'auto';
+    card.style.opacity = '1';
+});
+
+transportCards.forEach(card => {
+    card.classList.remove('selected');
+
+    card.style.pointerEvents = 'auto';
+    card.style.opacity = '1';
+});
+
+allnetMode = false;
+allnetBtn.classList.remove('active');
+addressSelect.disabled = false;
+sniSelect.disabled = false;
+proxySelect.disabled = true;
+
+selectedTransport = null;
+selectedProtocol = null;
+
+clearTimeout(transportGlowTimer);
+});
 
         function updateActivityGraph(currentVisitors = 0) {
             activityHistory.shift();
@@ -2148,35 +2306,117 @@ updateConfigOutput();
 }
 
         function updateConfigOutput() {
-            const selectedAddress = addressSelect.value;
-            const selectedSni = sniSelect.value;
-            const activeHostParam = cloudRunHost;
-            if (!selectedTransport || !selectedProtocol) {
-    configOutput.textContent = 'Select Transport and Protocol to generate config';
-    return;
-}
+    if (allnetMode) {
+        if (selectedProtocol !== 'vless' && selectedProtocol !== 'trojan') {
+            configOutput.textContent = 'Select Vless or Trojan to generate ALLNET config';
+            return;
+        }
 
-            let template = configTemplates[selectedTransport][selectedProtocol];
+        const template = allnetTemplates[selectedProtocol];
 
-            if (selectedProtocol === 'vmess') {
-                let vmessObj;
-                if (selectedTransport === 'websocket') vmessObj = {...vmessBase.ws};
-                if (selectedTransport === 'http-upgrade') vmessObj = {...vmessBase.hu};
-                if (selectedTransport === 'xhttp') vmessObj = {...vmessBase.xh};
-                vmessObj.add = selectedAddress;
-                vmessObj.sni = selectedSni;
-                vmessObj.host = activeHostParam;
-                const encoded = btoa(JSON.stringify(vmessObj));
-                template = template.replace('{{VMESS_WS}}', encoded).replace('{{VMESS_HU}}', encoded).replace('{{VMESS_XH}}', encoded);
+        if (!template) {
+            configOutput.textContent = 'ALLNET configuration template unavailable';
+            return;
+        }
+
+        const selectedProxy = proxySelect.value;
+
+        try {
+            const base64Data = template.substring('darktunnel://'.length);
+            const decodedJson = atob(base64Data);
+            const configObject = JSON.parse(decodedJson);
+
+            let tunnelConfig = null;
+
+            if (selectedProtocol === 'vless') {
+                tunnelConfig = configObject.vlessTunnelConfig;
+            } else if (selectedProtocol === 'trojan') {
+                tunnelConfig = configObject.trojanTunnelConfig;
             }
 
-            const finalConfig = template
-                .replace(/{{ADDRESS}}/g, selectedAddress)
-                .replace(/{{SNI}}/g, selectedSni)
-                .replace(/{{SELECTED_HOST}}/g, activeHostParam);
+            if (!tunnelConfig || typeof tunnelConfig !== 'object') {
+                throw new Error('Tunnel configuration not found');
+            }
+
+            if (
+                !tunnelConfig.injectConfig ||
+                typeof tunnelConfig.injectConfig !== 'object'
+            ) {
+                throw new Error('injectConfig not found');
+            }
+
+            tunnelConfig.injectConfig.proxyHost = selectedProxy.split(':')[0];
+            const newBase64Data = btoa(
+                JSON.stringify(configObject)
+            );
+
+            const finalConfig = 'darktunnel://' + newBase64Data;
 
             configOutput.textContent = finalConfig;
+
+            addLog(`ALLNET proxy applied → ${selectedProxy}`);
+
+        } catch (error) {
+            console.error('ALLNET configuration error:', error);
+
+            configOutput.textContent =
+                'Failed to modify ALLNET proxy';
+
+            addLog(`ALLNET proxy error → ${error.message}`);
         }
+
+        return;
+    }
+
+    const selectedAddress = addressSelect.value;
+    const selectedSni = sniSelect.value;
+    const activeHostParam = cloudRunHost;
+
+    if (!selectedTransport || !selectedProtocol) {
+        configOutput.textContent =
+            'Select Transport and Protocol to generate config';
+        return;
+    }
+
+    let template =
+        configTemplates[selectedTransport][selectedProtocol];
+
+    if (selectedProtocol === 'vmess') {
+        let vmessObj;
+
+        if (selectedTransport === 'websocket') {
+            vmessObj = { ...vmessBase.ws };
+        }
+
+        if (selectedTransport === 'http-upgrade') {
+            vmessObj = { ...vmessBase.hu };
+        }
+
+        if (selectedTransport === 'xhttp') {
+            vmessObj = { ...vmessBase.xh };
+        }
+
+        vmessObj.add = selectedAddress;
+        vmessObj.sni = selectedSni;
+        vmessObj.host = activeHostParam;
+
+        const encoded = btoa(
+            JSON.stringify(vmessObj)
+        );
+
+        template = template
+            .replace('{{VMESS_WS}}', encoded)
+            .replace('{{VMESS_HU}}', encoded)
+            .replace('{{VMESS_XH}}', encoded);
+    }
+
+    const finalConfig = template
+        .replace(/{{ADDRESS}}/g, selectedAddress)
+        .replace(/{{SNI}}/g, selectedSni)
+        .replace(/{{SELECTED_HOST}}/g, activeHostParam);
+
+    configOutput.textContent = finalConfig;
+}
 
         async function loadAllRealData() {
     updateActivityGraph();
@@ -2245,7 +2485,6 @@ updateConfigOutput();
 
         addLog('Could not retrieve visitor geolocation');
     }
-
 
 try {
                 const res = await fetch(BACKEND_ENDPOINT);
