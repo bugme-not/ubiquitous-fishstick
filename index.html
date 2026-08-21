@@ -1899,7 +1899,6 @@ let allnetMode = false;
         let selectedTransport = null;
         let selectedProtocol = 'vless';
         let cloudRunHost = null; 
-        let deployedServers = [];
         let transportGlowTimer;
         const configTemplates = {
             websocket: {
@@ -1978,91 +1977,74 @@ let allnetMode = false;
     addLog('Loading latest server list...');
 
     try {
-        const res = await fetch(MASTER_LIST_URL + '?t=' + Date.now(), {
-            cache: 'no-store'
-        });
+        const res = await fetch(MASTER_LIST_URL + '?t=' + Date.now());
 
         if (!res.ok) {
-            throw new Error('Failed to load server list');
+            throw new Error('Failed');
         }
-
         const data = await res.json();
+        deployedServers = data.deployed_servers || [];
+        const currentHost = location.hostname;
 
-        deployedServers = Array.isArray(data.deployed_servers)
-            ? data.deployed_servers
-            : [];
-
-        await detectCloudRunHost();
-
-        updateConfigOutput();
+        if (
+            currentHost.includes('.run.app') &&
+            !deployedServers.includes(currentHost)
+        ) {
+            deployedServers.push(currentHost);
+        }
 
         addLog('Server list updated successfully.');
+
+detectCloudRunHost();
+updateConfigOutput();
+
     } catch (error) {
+
         addLog('Failed to load server list.');
 
-        await detectCloudRunHost();
-
-        updateConfigOutput();
     }
 }
-        async function detectCloudRunHost() {
+
+        function extractRunAppHostname(value) {
+    if (typeof value !== 'string') {
+        return null;
+    }
+
+    let hostname = value.trim();
+
+    if (!hostname) {
+        return null;
+    }
+
+    hostname = hostname.replace(/^https?:\/\//i, '');
+    hostname = hostname.split('/')[0];
+    hostname = hostname.split(':')[0];
+
+    const match = hostname.match(
+        /^(?:[a-z0-9-]+\.)+[a-z0-9-]+\.run\.app$/i
+    );
+
+    return match ? match[0] : null;
+}
+
+async function detectCloudRunHost() {
     try {
-        const currentHost = window.location.hostname;
-
-        if (currentHost && currentHost.endsWith('.run.app')) {
-            cloudRunHost = currentHost;
-            addLog(`Cloud Run host detected → ${cloudRunHost}`);
-            return cloudRunHost;
-        }
-
-        try {
-            const statusRes = await fetch(
-                BACKEND_ENDPOINT + '?t=' + Date.now(),
-                {
-                    cache: 'no-store'
-                }
-            );
-
-            if (statusRes.ok) {
-                const statusData = await statusRes.json();
-
-                const backendHost =
-                    statusData.cloud_run_host ||
-                    statusData.cloudRunHost ||
-                    statusData.run_app_host ||
-                    statusData.runAppHost ||
-                    null;
-
-                if (
-                    typeof backendHost === 'string' &&
-                    backendHost.endsWith('.run.app')
-                ) {
-                    cloudRunHost = backendHost;
-                    addLog(`Cloud Run host detected → ${cloudRunHost}`);
-                    return cloudRunHost;
-                }
-            }
-        } catch (error) {
-        }
-
-        const runAppHost = deployedServers.find(host =>
-            typeof host === 'string' &&
-            host.endsWith('.run.app')
+        const detectedHost = extractRunAppHostname(
+            window.location.hostname
         );
 
-        if (runAppHost) {
-            cloudRunHost = runAppHost;
-            addLog(`Cloud Run host detected → ${cloudRunHost}`);
-            return cloudRunHost;
+        if (detectedHost) {
+            cloudRunHost = detectedHost;
+            addLog('Current server host detected');
+            updateConfigOutput();
+            return detectedHost;
         }
 
         cloudRunHost = null;
-        addLog('Cloud Run host could not be detected');
         return null;
 
-    } catch (error) {
+    } catch (err) {
         cloudRunHost = null;
-        addLog('Cloud Run host detection failed');
         return null;
     }
 }
@@ -2114,7 +2096,7 @@ let allnetMode = false;
         }
 
         document.addEventListener('DOMContentLoaded', () => {
-   scaleDashboard();
+    scaleDashboard();
     setTimeout(() => {
         page1.classList.remove('active');
         page3.classList.add('active');
@@ -2128,9 +2110,9 @@ let allnetMode = false;
                 updateLiveUptime();
                 setInterval(updateLiveUptime, 1000);
                 detectCloudRunHost();
-fetchAllServers();
-addLog('Server Status: READY');
-updateConfigOutput();
+                fetchAllServers();
+                addLog('Server Status: READY');
+                updateConfigOutput();
                 scaleDashboard();
             }, 1800);
         });
@@ -2352,82 +2334,125 @@ clearTimeout(transportGlowTimer);
         function updateConfigOutput() {
     if (allnetMode) {
         if (selectedProtocol !== 'vless' && selectedProtocol !== 'trojan') {
-            configOutput.textContent = 'Select Vless or Trojan to generate ALLNET config';
+            configOutput.textContent =
+                'Select Vless or Trojan to generate ALLNET config';
             return;
         }
 
         const template = allnetTemplates[selectedProtocol];
 
         if (!template) {
-            configOutput.textContent = 'ALLNET configuration template unavailable';
+            configOutput.textContent =
+                'ALLNET configuration template unavailable';
             return;
         }
 
         const selectedProxy = proxySelect.value;
 
         try {
-            const base64Data = template.substring('darktunnel://'.length);
+            const base64Data = template.substring(
+                'darktunnel://'.length
+            );
+
             const decodedJson = atob(base64Data);
             const configObject = JSON.parse(decodedJson);
 
             let tunnelConfig = null;
 
             if (selectedProtocol === 'vless') {
-                tunnelConfig = configObject.vlessTunnelConfig;
+                tunnelConfig =
+                    configObject.vlessTunnelConfig;
             } else if (selectedProtocol === 'trojan') {
-                tunnelConfig = configObject.trojanTunnelConfig;
+                tunnelConfig =
+                    configObject.trojanTunnelConfig;
             }
 
-            if (!tunnelConfig || typeof tunnelConfig !== 'object') {
-                throw new Error('Tunnel configuration not found');
+            if (
+                !tunnelConfig ||
+                typeof tunnelConfig !== 'object'
+            ) {
+                throw new Error(
+                    'Tunnel configuration not found'
+                );
+            }
+
+            if (
+                !tunnelConfig.v2rayConfig ||
+                typeof tunnelConfig.v2rayConfig !== 'object'
+            ) {
+                throw new Error(
+                    'v2rayConfig not found'
+                );
             }
 
             if (
                 !tunnelConfig.injectConfig ||
                 typeof tunnelConfig.injectConfig !== 'object'
             ) {
-                throw new Error('injectConfig not found');
+                throw new Error(
+                    'injectConfig not found'
+                );
             }
 
-            tunnelConfig.injectConfig.proxyHost = selectedProxy.split(':')[0];
+            const detectedHeaderHost =
+                extractRunAppHostname(cloudRunHost);
+
+            if (!detectedHeaderHost) {
+                throw new Error(
+                    'Actual .run.app server hostname not detected'
+                );
+            }
+
+            tunnelConfig.v2rayConfig.wsHeaderHost =
+                detectedHeaderHost;
+
+            tunnelConfig.injectConfig.proxyHost =
+                selectedProxy.split(':')[0];
+
             const newBase64Data = btoa(
                 JSON.stringify(configObject)
             );
 
-            const finalConfig = 'darktunnel://' + newBase64Data;
-
-            configOutput.textContent = finalConfig;
-
-            addLog(`ALLNET proxy applied → ${selectedProxy}`);
-
-        } catch (error) {
-            console.error('ALLNET configuration error:', error);
+            const finalConfig =
+                'darktunnel://' + newBase64Data;
 
             configOutput.textContent =
-                'Failed to modify ALLNET proxy';
+                finalConfig;
 
-            addLog(`ALLNET proxy error → ${error.message}`);
+            addLog(
+                `ALLNET Header Host applied → ${detectedHeaderHost}`
+            );
+
+            addLog(
+                `ALLNET proxy applied → ${selectedProxy}`
+            );
+
+        } catch (error) {
+            console.error(
+                'ALLNET configuration error:',
+                error
+            );
+
+            configOutput.textContent =
+                'Failed to modify ALLNET configuration';
+
+            addLog(
+                `ALLNET configuration error → ${error.message}`
+            );
         }
 
         return;
     }
 
-   const selectedAddress = addressSelect.value;
-const selectedSni = sniSelect.value;
-const activeHostParam = cloudRunHost || '';
-       
+    const selectedAddress = addressSelect.value;
+    const selectedSni = sniSelect.value;
+    const activeHostParam = cloudRunHost;
 
     if (!selectedTransport || !selectedProtocol) {
-    configOutput.textContent =
-        'Select Transport and Protocol to generate config';
-    return;
-}
-
-if (!activeHostParam) {
-    configOutput.textContent =
-        'Server host is not available yet';
-    return;
-}
+        configOutput.textContent =
+            'Select Transport and Protocol to generate config';
+        return;
+    }
 
     let template =
         configTemplates[selectedTransport][selectedProtocol];
