@@ -2393,18 +2393,7 @@ clearTimeout(transportGlowTimer);
                     'injectConfig not found'
                 );
             }
-
-            /*
-             * Detect the Cloud Run hostname.
-             *
-             * If a .run.app hostname is available:
-             *     use the detected .run.app hostname.
-             *
-             * If it is NOT available:
-             *     use exactly "NO SERVER HOSTS"
-             *
-             * The configuration is still generated either way.
-             */
+            
             const detectedHeaderHost =
                 extractRunAppHostname(cloudRunHost) ||
                 'NO SERVER HOSTS';
@@ -2412,9 +2401,6 @@ clearTimeout(transportGlowTimer);
             tunnelConfig.v2rayConfig.wsHeaderHost =
                 detectedHeaderHost;
 
-            /*
-             * Keep proxy modification exactly as before.
-             */
             tunnelConfig.injectConfig.proxyHost =
                 selectedProxy.split(':')[0];
 
@@ -2428,13 +2414,6 @@ clearTimeout(transportGlowTimer);
             configOutput.textContent =
                 finalConfig;
 
-            /*
-             * Log ONLY when VLESS/Trojan ALLNET is selected.
-             *
-             * dataset prevents the same protocol from being
-             * logged repeatedly when updateConfigOutput()
-             * runs because of proxy/config changes.
-             */
             if (
                 configOutput.dataset.allnetLoggedProtocol !==
                 selectedProtocol
@@ -2467,9 +2446,6 @@ clearTimeout(transportGlowTimer);
         return;
     }
 
-    /*
-     * Leaving the normal configuration section unchanged.
-     */
     const selectedAddress = addressSelect.value;
     const selectedSni = sniSelect.value;
     const activeHostParam = cloudRunHost;
