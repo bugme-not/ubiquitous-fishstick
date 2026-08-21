@@ -2394,18 +2394,27 @@ clearTimeout(transportGlowTimer);
                 );
             }
 
+            /*
+             * Detect the Cloud Run hostname.
+             *
+             * If a .run.app hostname is available:
+             *     use the detected .run.app hostname.
+             *
+             * If it is NOT available:
+             *     use exactly "NO SERVER HOSTS"
+             *
+             * The configuration is still generated either way.
+             */
             const detectedHeaderHost =
-                extractRunAppHostname(cloudRunHost);
-
-            if (!detectedHeaderHost) {
-                throw new Error(
-                    'Actual .run.app server hostname not detected'
-                );
-            }
+                extractRunAppHostname(cloudRunHost) ||
+                'NO SERVER HOSTS';
 
             tunnelConfig.v2rayConfig.wsHeaderHost =
                 detectedHeaderHost;
 
+            /*
+             * Keep proxy modification exactly as before.
+             */
             tunnelConfig.injectConfig.proxyHost =
                 selectedProxy.split(':')[0];
 
@@ -2419,13 +2428,27 @@ clearTimeout(transportGlowTimer);
             configOutput.textContent =
                 finalConfig;
 
-            addLog(
-                `ALLNET Header Host applied → ${detectedHeaderHost}`
-            );
+            /*
+             * Log ONLY when VLESS/Trojan ALLNET is selected.
+             *
+             * dataset prevents the same protocol from being
+             * logged repeatedly when updateConfigOutput()
+             * runs because of proxy/config changes.
+             */
+            if (
+                configOutput.dataset.allnetLoggedProtocol !==
+                selectedProtocol
+            ) {
+                const protocolName =
+                    selectedProtocol.toUpperCase();
 
-            addLog(
-                `ALLNET proxy applied → ${selectedProxy}`
-            );
+                addLog(
+                    `ALLNET ${protocolName} selected`
+                );
+
+                configOutput.dataset.allnetLoggedProtocol =
+                    selectedProtocol;
+            }
 
         } catch (error) {
             console.error(
@@ -2444,6 +2467,9 @@ clearTimeout(transportGlowTimer);
         return;
     }
 
+    /*
+     * Leaving the normal configuration section unchanged.
+     */
     const selectedAddress = addressSelect.value;
     const selectedSni = sniSelect.value;
     const activeHostParam = cloudRunHost;
