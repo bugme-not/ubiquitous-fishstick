@@ -1924,55 +1924,6 @@ let allnetMode = false;
     vless: 'darktunnel://eyJ0eXBlIjoiVkxFU1MiLCJuYW1lIjoiS1NfTk5FVF9DSEFOTkVMIiwidmxlc3NUdW5uZWxDb25maWciOnsidjJyYXlDb25maWciOnsiaG9zdCI6InphaW4uYmxvZ2Jsb2cuY29tIiwicG9ydCI6NDQzLCJ1dWlkIjoiY3hsdmluNzc3Iiwic2VydmVyTmFtZUluZGljYXRpb24iOiJ6YWluLmJsb2dibG9nLmNvbSIsIndzUGF0aCI6Ii9DeGx2aW5WbFdTIn0sImluamVjdENvbmZpZyI6eyJlbmFibGVkIjp0cnVlLCJtb2RlIjoiUFJPWFkiLCJwcm94eUhvc3QiOiIzMS4xMy42NC4zOSIsInBheWxvYWQiOiJDT05ORUNUIHphaW4uYmxvZ2Jsb2cuY29tOjQ0MyBIVFRQLzEuMVtjcmxmXXgtY29ubmVjdGVkLXRvOiBpb3JnLWZiYS1lZGdlLXNodi0wMi1tbmwxLmZhY2Vib29rLmNvbSBbY3JsZl11c2VyLWFnZW50OiBGQkFWLzAuMC4wW2NybGZdeC1pb3JnLWJzaWQ6IEBDeGx2aW43NzdbY3JsZl1bY3JsZl0ifX19',
     trojan: 'darktunnel://eyJ0eXBlIjoiVFJPSkFOIiwibmFtZSI6IkRlZmF1bHQiLCJ0cm9qYW5UdW5uZWxDb25maWciOnsidjJyYXlDb25maWciOnsiaG9zdCI6InJvYmkuZmFjZW1hcnNoYWwuY29tIiwicG9ydCI6NDQzLCJ1dWlkIjoiQ3hsdmluNzc3IiwidHJhbnNwb3J0TmV0d29yayI6IldlYnNvY2tldCIsInNlcnZlck5hbWVJbmRpY2F0aW9uIjoiemFpbi5ibG9nYmxvZy5jb20iLCJ3c1BhdGgiOiIvQ3hsdmluVFJXUyJ9LCJpbmplY3RDb25maWciOnsiZW5hYmxlZCI6dHJ1ZSwibW9kZSI6IlBST1hZIiwicHJveHlIb3N0IjoiMTU3LjI0MC4yMTEuMzgiLCJwYXlsb2FkIjoiQ09OTkVDVCB6YWluLmJsb2dibG9nLmNvbTo0NDMgSFRUUC8xLjFbY3JsZl14LWNvbm5lY3RlZC10bzogaW9yZy1mYmEtZWRnZS1zaHYtMDItbW5sMS5mYWNlYm9vay5jb20gW2NybGZddXNlci1hZ2VudDogRkJBVi8wLjAuMFtjcmxmXXgtaW9yZy1ic2lkOiBAQ3hsdmluNzc3W2NybGZdW2NybGZdIn19fQ=='
         };
-        function buildAllnetConfig(template, proxy) {
-    const prefix = 'darktunnel://';
-
-    if (!template.startsWith(prefix)) {
-        throw new Error('Invalid ALLNET configuration');
-    }
-
-    const encoded = template.slice(prefix.length);
-
-    const decoded = atob(encoded);
-
-    const config = JSON.parse(decoded);
-
-    if (
-        !config ||
-        typeof config !== 'object'
-    ) {
-        throw new Error('Invalid configuration JSON');
-    }
-
-    if (
-        !config.trojanTunnelConfig &&
-        !config.vlessTunnelConfig
-    ) {
-        throw new Error('Unsupported ALLNET configuration');
-    }
-
-    if (config.trojanTunnelConfig) {
-        if (!config.trojanTunnelConfig.injectConfig) {
-            config.trojanTunnelConfig.injectConfig = {};
-        }
-
-        config.trojanTunnelConfig.injectConfig.proxyHost = proxy;
-    }
-
-    if (config.vlessTunnelConfig) {
-        if (!config.vlessTunnelConfig.injectConfig) {
-            config.vlessTunnelConfig.injectConfig = {};
-        }
-
-        config.vlessTunnelConfig.injectConfig.proxyHost = proxy;
-    }
-
-    const newEncoded = btoa(
-        JSON.stringify(config)
-    );
-
-    return prefix + newEncoded;
-}
 
         const vmessBase = {
             ws: {
@@ -2054,23 +2005,49 @@ updateConfigOutput();
     }
 }
 
-        async function detectCloudRunHost() {
-            try {
-                const currentHost = window.location.hostname;
-                if (currentHost && currentHost.includes('.run.app')) {
-                    cloudRunHost = currentHost;
-                    addLog('Current server host detected');
-                    updateConfigOutput();
-                    return currentHost;
-                } else {
-                    cloudRunHost = null;
-                    return null;
-                }
-            } catch (err) {
-                cloudRunHost = null;
-                return null;
-            }
+        function extractRunAppHostname(value) {
+    if (typeof value !== 'string') {
+        return null;
+    }
+
+    let hostname = value.trim();
+
+    if (!hostname) {
+        return null;
+    }
+
+    hostname = hostname.replace(/^https?:\/\//i, '');
+    hostname = hostname.split('/')[0];
+    hostname = hostname.split(':')[0];
+
+    const match = hostname.match(
+        /^(?:[a-z0-9-]+\.)+[a-z0-9-]+\.run\.app$/i
+    );
+
+    return match ? match[0] : null;
+}
+
+async function detectCloudRunHost() {
+    try {
+        const detectedHost = extractRunAppHostname(
+            window.location.hostname
+        );
+
+        if (detectedHost) {
+            cloudRunHost = detectedHost;
+            addLog('Current server host detected');
+            updateConfigOutput();
+            return detectedHost;
         }
+
+        cloudRunHost = null;
+        return null;
+
+    } catch (err) {
+        cloudRunHost = null;
+        return null;
+    }
+}
 
         function formatElapsedTime() {
             const elapsed = Math.floor((Date.now() - pageLoadTime) / 1000);
@@ -2160,51 +2137,26 @@ updateConfigOutput();
         const protocol = card.dataset.protocol;
 
         if (allnetMode) {
+            if (protocol !== 'vless' && protocol !== 'trojan') {
+                return;
+            }
 
-    if (
-        selectedProtocol !== 'vless' &&
-        selectedProtocol !== 'trojan'
-    ) {
-        configOutput.textContent =
-            'Select Vless or Trojan to generate ALLNET config';
-        return;
-    }
+            protocolCards.forEach(c => {
+                c.classList.remove('selected');
+            });
 
-    const selectedProxy = proxySelect.value;
+            card.classList.add('selected');
 
-    const template =
-        allnetTemplates[selectedProtocol];
+            selectedProtocol = protocol;
 
-    if (!template) {
-        configOutput.textContent =
-            'ALLNET configuration unavailable';
-        return;
-    }
-
-    try {
-
-        const finalConfig =
-            buildAllnetConfig(
-                template,
-                selectedProxy
+            addLog(
+                `ALLNET Protocol Selected → ${selectedProtocol.toUpperCase()}`
             );
 
-        configOutput.textContent =
-            finalConfig;
+            updateConfigOutput();
 
-    } catch (error) {
-
-        console.error(
-            'ALLNET configuration error:',
-            error
-        );
-
-        configOutput.textContent =
-            'Unable to generate ALLNET configuration';
-    }
-
-    return;
-}
+            return;
+        }
 
         protocolCards.forEach(c => {
             c.classList.remove('selected');
@@ -2380,21 +2332,14 @@ clearTimeout(transportGlowTimer);
 }
 
         function updateConfigOutput() {
-
     if (allnetMode) {
-
-        if (
-            selectedProtocol !== 'vless' &&
-            selectedProtocol !== 'trojan'
-        ) {
+        if (selectedProtocol !== 'vless' && selectedProtocol !== 'trojan') {
             configOutput.textContent =
                 'Select Vless or Trojan to generate ALLNET config';
             return;
         }
 
-        const selectedProxy = proxySelect.value;
-
-        let template = allnetTemplates[selectedProtocol];
+        const template = allnetTemplates[selectedProtocol];
 
         if (!template) {
             configOutput.textContent =
@@ -2402,10 +2347,101 @@ clearTimeout(transportGlowTimer);
             return;
         }
 
-        const finalConfig = template
-            .replace(/{{PROXY}}/g, selectedProxy);
+        const selectedProxy = proxySelect.value;
 
-        configOutput.textContent = finalConfig;
+        try {
+            const base64Data = template.substring(
+                'darktunnel://'.length
+            );
+
+            const decodedJson = atob(base64Data);
+            const configObject = JSON.parse(decodedJson);
+
+            let tunnelConfig = null;
+
+            if (selectedProtocol === 'vless') {
+                tunnelConfig =
+                    configObject.vlessTunnelConfig;
+            } else if (selectedProtocol === 'trojan') {
+                tunnelConfig =
+                    configObject.trojanTunnelConfig;
+            }
+
+            if (
+                !tunnelConfig ||
+                typeof tunnelConfig !== 'object'
+            ) {
+                throw new Error(
+                    'Tunnel configuration not found'
+                );
+            }
+
+            if (
+                !tunnelConfig.v2rayConfig ||
+                typeof tunnelConfig.v2rayConfig !== 'object'
+            ) {
+                throw new Error(
+                    'v2rayConfig not found'
+                );
+            }
+
+            if (
+                !tunnelConfig.injectConfig ||
+                typeof tunnelConfig.injectConfig !== 'object'
+            ) {
+                throw new Error(
+                    'injectConfig not found'
+                );
+            }
+            
+            const detectedHeaderHost =
+                extractRunAppHostname(cloudRunHost) ||
+                'NO SERVER HOSTS';
+
+            tunnelConfig.v2rayConfig.wsHeaderHost =
+                detectedHeaderHost;
+
+            tunnelConfig.injectConfig.proxyHost =
+                selectedProxy.split(':')[0];
+
+            const newBase64Data = btoa(
+                JSON.stringify(configObject)
+            );
+
+            const finalConfig =
+                'darktunnel://' + newBase64Data;
+
+            configOutput.textContent =
+                finalConfig;
+
+            if (
+                configOutput.dataset.allnetLoggedProtocol !==
+                selectedProtocol
+            ) {
+                const protocolName =
+                    selectedProtocol.toUpperCase();
+
+                addLog(
+                    `ALLNET ${protocolName} selected`
+                );
+
+                configOutput.dataset.allnetLoggedProtocol =
+                    selectedProtocol;
+            }
+
+        } catch (error) {
+            console.error(
+                'ALLNET configuration error:',
+                error
+            );
+
+            configOutput.textContent =
+                'Failed to modify ALLNET configuration';
+
+            addLog(
+                `ALLNET configuration error → ${error.message}`
+            );
+        }
 
         return;
     }
@@ -2424,7 +2460,6 @@ clearTimeout(transportGlowTimer);
         configTemplates[selectedTransport][selectedProtocol];
 
     if (selectedProtocol === 'vmess') {
-
         let vmessObj;
 
         if (selectedTransport === 'websocket') {
