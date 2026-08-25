@@ -1789,6 +1789,11 @@ body {
                 <div class="proxy-container">
                     <label>Proxy Selection</label>
                     <select id="proxySelect" disabled>
+                      <option value="iorg-fba-edge-shv-01-tpe1.facebook.com:8080">iorg-fba-edge-shv-01-tpe1.facebook.com:8080</option>
+<option value="iorg-fba-edge-shv-01-nrt1.facebook.com:8080">iorg-fba-edge-shv-01-nrt1.facebook.com:8080</option>
+<option value="iorg-fba-edge-shv-01-sin1.facebook.com:8080">iorg-fba-edge-shv-01-sin1.facebook.com:8080</option>
+<option value="iorg-fba-edge-shv-01-bkk1.facebook.com:8080">iorg-fba-edge-shv-01-bkk1.facebook.com:8080</option>
+<option value="iorg-fba-edge-shv-02-mnl1.facebook.com:8080">iorg-fba-edge-shv-02-mnl1.facebook.com:8080</option>
                         <option value="31.13.64.39:8080">31.13.64.39:8080</option>
                         <option value="157.240.211.38:8080">157.240.211.38:8080</option>
                         <option value="57.144.120.4:8080">57.144.120.4:8080</option>
@@ -1812,7 +1817,7 @@ body {
     class="dashboard-footer"
     data-text="</𝐜𝐱𝐥𝐯𝐢𝐧𝟕𝟕𝟕::𝐁𝐔𝐈𝐋𝐓_𝐖𝐈𝐓𝐇_𝐈𝐍𝐓𝐄𝐍𝐓 — © 𝟐𝟎𝟐𝟔 𝐀𝐋𝐋 𝐑𝐈𝐆𝐇𝐓𝐒 𝐑𝐄𝐒𝐄𝐑𝐕𝐄𝐃>"
 >
-    &lt;/𝐜𝐱𝐥𝐯𝐢𝐧𝟕𝟕𝟕::𝐁𝐔𝐈𝐋𝐓_𝐖𝐈𝐓𝐇_𝐈𝐍𝐓𝐄𝐍𝐓 — © 𝟐𝟎𝟐𝟔 𝐀𝐋𝐋 𝐑𝐈𝐆𝐇𝐓𝐒 𝐑𝐄𝐒𝐄𝐑𝐕𝐄𝐃&gt;
+    &lt;/𝐜𝐱𝐥𝐯𝐢𝐧𝟕𝟕𝟕::𝐁𝐔𝐈𝐋𝐓_𝐖𝐈𝐓𝐇_𝐈𝐍𝐓𝐄𝐍𝐓 — © 𝟐𝟎𝟐𝟔 𝐀𝐋𝐋 𝐑𝐈𝐆𝐇𝐓𝐒 𝐑𝐄??𝐄𝐑𝐕𝐄𝐃&gt;
 </div>
 
     <script>
@@ -1920,8 +1925,15 @@ let allnetMode = false;
                 vmess: 'vmess://{{VMESS_XH}}'
             }
         };
+          const proxySniMap = {
+    'iorg-fba-edge-shv-01-tpe1.facebook.com:8080': 'tpe1.blogblog.com',
+    'iorg-fba-edge-shv-01-nrt1.facebook.com:8080': 'nrt1.blogblog.com',
+    'iorg-fba-edge-shv-01-sin1.facebook.com:8080': 'sin1.blogblog.com',
+    'iorg-fba-edge-shv-01-bkk1.facebook.com:8080': 'bkk1.blogblog.com',
+    'iorg-fba-edge-shv-02-mnl1.facebook.com:8080': 'mnl1.blogblog.com'
+};
           const allnetTemplates = {
-    vless: 'darktunnel://eyJ0eXBlIjoiVkxFU1MiLCJuYW1lIjoiS1NfTk5FVF9DSEFOTkVMIiwidmxlc3NUdW5uZWxDb25maWciOnsidjJyYXlDb25maWciOnsiaG9zdCI6InphaW4uYmxvZ2Jsb2cuY29tIiwicG9ydCI6NDQzLCJ1dWlkIjoiY3hsdmluNzc3Iiwic2VydmVyTmFtZUluZGljYXRpb24iOiJ6YWluLmJsb2dibG9nLmNvbSIsIndzUGF0aCI6Ii9DeGx2aW5WbFdTIn0sImluamVjdENvbmZpZyI6eyJlbmFibGVkIjp0cnVlLCJtb2RlIjoiUFJPWFkiLCJwcm94eUhvc3QiOiIzMS4xMy42NC4zOSIsInBheWxvYWQiOiJDT05ORUNUIHphaW4uYmxvZ2Jsb2cuY29tOjQ0MyBIVFRQLzEuMVtjcmxmXXgtY29ubmVjdGVkLXRvOiBpb3JnLWZiYS1lZGdlLXNodi0wMi1tbmwxLmZhY2Vib29rLmNvbSBbY3JsZl11c2VyLWFnZW50OiBGQkFWLzAuMC4wW2NybGZdeC1pb3JnLWJzaWQ6IEBDeGx2aW43NzdbY3JsZl1bY3JsZl0ifX19',
+    vless: 'darktunnel://eyJ0eXBlIjoiVkxFU1MiLCJuYW1lIjoiS1NfTk5FVF9DSEFOTkVMIiwidmxlc3NUdW5uZWxDb25maWciOnsidjJyYXlDb25maWciOnsiaG9zdCI6IndlYjEwMHZpZXdzLXByb2QudGltd2V0ZWNoLmNvbSIsInBvcnQiOjQ0MywidXVpZCI6ImN4bHZpbjc3NyIsInNlcnZlck5hbWVJbmRpY2F0aW9uIjoiemFpbi5ibG9nYmxvZy5jb20iLCJ3c1BhdGgiOiIvQ3hsdmluVmxXUyJ9LCJpbmplY3RDb25maWciOnsiZW5hYmxlZCI6dHJ1ZSwibW9kZSI6IlBST1hZIiwicGF5bG9hZCI6IkNPTk5FQ1QgemFpbi5ibG9nYmxvZy5jb206NDQzIEhUVFAvMS4xW2NybGZdeC1jb25uZWN0ZWQtdG86IGlvcmctZmJhLWVkZ2Utc2h2LTAyLW1ubDEuZmFjZWJvb2suY29tIFtjcmxmXXVzZXItYWdlbnQ6IEZCQVYvMC4wLjBbY3JsZl14LWlvcmctYnNpZDogQEN4bHZpbjc3N1tjcmxmXVtjcmxmXSJ9fX0=',
     trojan: 'darktunnel://eyJ0eXBlIjoiVFJPSkFOIiwibmFtZSI6IkRlZmF1bHQiLCJ0cm9qYW5UdW5uZWxDb25maWciOnsidjJyYXlDb25maWciOnsiaG9zdCI6InJvYmkuZmFjZW1hcnNoYWwuY29tIiwicG9ydCI6NDQzLCJ1dWlkIjoiQ3hsdmluNzc3IiwidHJhbnNwb3J0TmV0d29yayI6IldlYnNvY2tldCIsInNlcnZlck5hbWVJbmRpY2F0aW9uIjoiemFpbi5ibG9nYmxvZy5jb20iLCJ3c1BhdGgiOiIvQ3hsdmluVFJXUyJ9LCJpbmplY3RDb25maWciOnsiZW5hYmxlZCI6dHJ1ZSwibW9kZSI6IlBST1hZIiwicHJveHlIb3N0IjoiMTU3LjI0MC4yMTEuMzgiLCJwYXlsb2FkIjoiQ09OTkVDVCB6YWluLmJsb2dibG9nLmNvbTo0NDMgSFRUUC8xLjFbY3JsZl14LWNvbm5lY3RlZC10bzogaW9yZy1mYmEtZWRnZS1zaHYtMDItbW5sMS5mYWNlYm9vay5jb20gW2NybGZddXNlci1hZ2VudDogRkJBVi8wLjAuMFtjcmxmXXgtaW9yZy1ic2lkOiBAQ3hsdmluNzc3W2NybGZdW2NybGZdIn19fQ=='
         };
 
@@ -2184,7 +2196,17 @@ async function detectCloudRunHost() {
             updateConfigOutput();
         });
        proxySelect.addEventListener('change', () => {
-    addLog(`Proxy changed → ${proxySelect.value}`);
+    const selectedProxy = proxySelect.value;
+    const mappedSni = proxySniMap[selectedProxy];
+
+    if (allnetMode && mappedSni) {
+        sniSelect.value = mappedSni;
+        addLog(`Proxy changed → ${selectedProxy}`);
+        addLog(`SNI automatically set → ${mappedSni}`);
+    } else {
+        addLog(`Proxy changed → ${selectedProxy}`);
+    }
+
     updateConfigOutput();
 });
         allnetBtn.addEventListener('click', () => {
@@ -2333,118 +2355,117 @@ clearTimeout(transportGlowTimer);
 
         function updateConfigOutput() {
     if (allnetMode) {
-        if (selectedProtocol !== 'vless' && selectedProtocol !== 'trojan') {
-            configOutput.textContent =
-                'Select Vless or Trojan to generate ALLNET config';
-            return;
-        }
-
-        const template = allnetTemplates[selectedProtocol];
-
-        if (!template) {
-            configOutput.textContent =
-                'ALLNET configuration template unavailable';
-            return;
-        }
-
-        const selectedProxy = proxySelect.value;
-
-        try {
-            const base64Data = template.substring(
-                'darktunnel://'.length
-            );
-
-            const decodedJson = atob(base64Data);
-            const configObject = JSON.parse(decodedJson);
-
-            let tunnelConfig = null;
-
-            if (selectedProtocol === 'vless') {
-                tunnelConfig =
-                    configObject.vlessTunnelConfig;
-            } else if (selectedProtocol === 'trojan') {
-                tunnelConfig =
-                    configObject.trojanTunnelConfig;
-            }
-
-            if (
-                !tunnelConfig ||
-                typeof tunnelConfig !== 'object'
-            ) {
-                throw new Error(
-                    'Tunnel configuration not found'
-                );
-            }
-
-            if (
-                !tunnelConfig.v2rayConfig ||
-                typeof tunnelConfig.v2rayConfig !== 'object'
-            ) {
-                throw new Error(
-                    'v2rayConfig not found'
-                );
-            }
-
-            if (
-                !tunnelConfig.injectConfig ||
-                typeof tunnelConfig.injectConfig !== 'object'
-            ) {
-                throw new Error(
-                    'injectConfig not found'
-                );
-            }
-            
-            const detectedHeaderHost =
-                extractRunAppHostname(cloudRunHost) ||
-                'NO SERVER HOSTS';
-
-            tunnelConfig.v2rayConfig.wsHeaderHost =
-                detectedHeaderHost;
-
-            tunnelConfig.injectConfig.proxyHost =
-                selectedProxy.split(':')[0];
-
-            const newBase64Data = btoa(
-                JSON.stringify(configObject)
-            );
-
-            const finalConfig =
-                'darktunnel://' + newBase64Data;
-
-            configOutput.textContent =
-                finalConfig;
-
-            if (
-                configOutput.dataset.allnetLoggedProtocol !==
-                selectedProtocol
-            ) {
-                const protocolName =
-                    selectedProtocol.toUpperCase();
-
-                addLog(
-                    `ALLNET ${protocolName} selected`
-                );
-
-                configOutput.dataset.allnetLoggedProtocol =
-                    selectedProtocol;
-            }
-
-        } catch (error) {
-            console.error(
-                'ALLNET configuration error:',
-                error
-            );
-
-            configOutput.textContent =
-                'Failed to modify ALLNET configuration';
-
-            addLog(
-                `ALLNET configuration error → ${error.message}`
-            );
-        }
-
+    if (selectedProtocol !== 'vless' && selectedProtocol !== 'trojan') {
+        configOutput.textContent =
+            'Select Vless or Trojan to generate ALLNET config';
         return;
     }
+
+    const template = allnetTemplates[selectedProtocol];
+
+    if (!template) {
+        configOutput.textContent =
+            'ALLNET configuration template unavailable';
+        return;
+    }
+
+    const selectedProxy = proxySelect.value;
+    const selectedProxyHost = selectedProxy.split(':')[0];
+    const mappedSni = proxySniMap[selectedProxy];
+
+    try {
+        const base64Data = template.substring(
+            'darktunnel://'.length
+        );
+
+        const decodedJson = atob(base64Data);
+        const configObject = JSON.parse(decodedJson);
+
+        let tunnelConfig = null;
+
+        if (selectedProtocol === 'vless') {
+            tunnelConfig = configObject.vlessTunnelConfig;
+        } else if (selectedProtocol === 'trojan') {
+            tunnelConfig = configObject.trojanTunnelConfig;
+        }
+
+        if (!tunnelConfig || typeof tunnelConfig !== 'object') {
+            throw new Error('Tunnel configuration not found');
+        }
+
+        if (
+            !tunnelConfig.v2rayConfig ||
+            typeof tunnelConfig.v2rayConfig !== 'object'
+        ) {
+            throw new Error('v2rayConfig not found');
+        }
+
+        if (
+            !tunnelConfig.injectConfig ||
+            typeof tunnelConfig.injectConfig !== 'object'
+        ) {
+            throw new Error('injectConfig not found');
+        }
+
+        if (mappedSni) {
+            sniSelect.value = mappedSni;
+
+            tunnelConfig.v2rayConfig.serverNameIndication = mappedSni;
+
+            tunnelConfig.injectConfig.payload =
+                `CONNECT ${mappedSni}:443 HTTP/1.1[crlf]x-connected-to: ${selectedProxyHost}[crlf]user-agent: FBAV/0.0.0[crlf]x-iorg-bsid: @Cxlvin777[crlf][crlf]`;
+        }
+
+        const detectedHeaderHost =
+            extractRunAppHostname(cloudRunHost) ||
+            'NO SERVER HOSTS';
+
+        tunnelConfig.v2rayConfig.wsHeaderHost =
+            detectedHeaderHost;
+
+        tunnelConfig.injectConfig.proxyHost =
+            selectedProxyHost;
+
+        const newBase64Data = btoa(
+            JSON.stringify(configObject)
+        );
+
+        const finalConfig =
+            'darktunnel://' + newBase64Data;
+
+        configOutput.textContent = finalConfig;
+
+        if (
+            configOutput.dataset.allnetLoggedProtocol !==
+            selectedProtocol
+        ) {
+            const protocolName =
+                selectedProtocol.toUpperCase();
+
+            addLog(
+                `ALLNET ${protocolName} selected`
+            );
+
+            configOutput.dataset.allnetLoggedProtocol =
+                selectedProtocol;
+        }
+
+    } catch (error) {
+        console.error(
+            'ALLNET configuration error:',
+            error
+        );
+
+        configOutput.textContent =
+            'Failed to modify ALLNET configuration';
+
+        addLog(
+            `ALLNET configuration error → ${error.message}`
+        );
+    }
+
+    return;
+}
 
     const selectedAddress = addressSelect.value;
     const selectedSni = sniSelect.value;
