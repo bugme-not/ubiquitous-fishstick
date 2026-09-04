@@ -756,6 +756,133 @@ filter: none !important;
 .clear-log-btn:active{
     transform:scale(.94);
 }
+.log-actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 5px;
+    width: 100%;
+}
+
+.info-btn {
+    width: 18px;
+    height: 18px;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+    border: 1px solid rgba(255,255,255,.18);
+    border-radius: 50%;
+    color: #94a3b8;
+    font-size: 11px;
+    font-weight: 700;
+    line-height: 1;
+    cursor: pointer;
+    transition: .2s ease;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.info-btn:hover {
+    color: #fff;
+    border-color: rgba(0,245,255,.7);
+    box-shadow: 0 0 7px rgba(0,245,255,.35);
+}
+
+.info-btn:active {
+    transform: scale(.9);
+}
+
+.info-popup {
+    position: fixed;
+    inset: 0;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    background: rgba(0,0,0,.45);
+    backdrop-filter: blur(4px);
+    z-index: 20000;
+}
+
+.info-popup.active {
+    display: flex;
+}
+
+.info-box {
+    position: relative;
+    width: 360px;
+    max-width: 100%;
+    max-height: 80vh;
+    overflow-y: auto;
+    padding: 22px 20px;
+    background: #101722;
+    border: 1px solid rgba(255,255,255,.1);
+    border-radius: 12px;
+    box-shadow: 0 20px 50px rgba(0,0,0,.5);
+    animation: infoPopup .2s ease;
+}
+
+@keyframes infoPopup {
+    from {
+        opacity: 0;
+        transform: scale(.96) translateY(8px);
+    }
+
+    to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+}
+
+.info-close {
+    position: absolute;
+    top: 8px;
+    right: 10px;
+    width: 24px;
+    height: 24px;
+    padding: 0;
+    background: transparent;
+    border: none;
+    color: #8b95a5;
+    font-size: 20px;
+    cursor: pointer;
+}
+
+.info-close:hover {
+    color: #fff;
+}
+
+.info-content {
+    padding-right: 8px;
+    color: #cbd5e1;
+    font-size: 13px;
+    line-height: 1.6;
+}
+
+.info-content h2 {
+    margin: 0 0 12px;
+    color: #fff;
+    font-size: 16px;
+    font-weight: 700;
+}
+
+.info-content p {
+    margin: 0 0 12px;
+}
+
+.info-content .risk {
+    color: #facc15;
+}
+
+.info-content .dev {
+    margin-top: 16px;
+    color: #94a3b8;
+}
+
+.info-content .dev strong {
+    color: #fff;
+}
 .log-bottom{
     flex:none;
     width:100%;
@@ -1731,8 +1858,11 @@ body {
     <div class="log-content" id="systemLog"></div>
 
     <div class="log-bottom">
+    <div class="log-actions">
         <button class="clear-log-btn" id="clearLogBtn">CLEAR</button>
+        <button class="info-btn" id="infoBtn" type="button" aria-label="Information">i</button>
     </div>
+</div>
 
 </div>
 </div>
@@ -1814,6 +1944,33 @@ body {
             <button class="copy-btn" id="copyConfigBtn">COPY CONFIG</button>
 
             <div class="dashboard-footer" data-text="</𝐜𝐱𝐥𝐯𝐢𝐧𝟕𝟕𝟕::𝐁𝐔𝐈𝐋𝐓_𝐖𝐈𝐓𝐇_𝐈𝐍𝐓𝐄𝐍𝐓 — © 𝟐𝟎𝟐𝟔 𝐀𝐋𝐋 𝐑𝐈𝐆𝐇𝐓𝐒 𝐑𝐄𝐒𝐄𝐑𝐕𝐄𝐃>">&lt;/𝐜𝐱𝐥𝐯𝐢𝐧𝟕𝟕𝟕::𝐁𝐔𝐈𝐋𝐓_𝐖𝐈𝐓𝐇_𝐈𝐍𝐓𝐄𝐍𝐓 — © 𝟐𝟎𝟐𝟔 𝐀𝐋𝐋 𝐑𝐈𝐆𝐇𝐓𝐒 𝐑𝐄𝐒𝐄𝐑𝐕𝐄𝐃&gt;</div>
+  
+<div class="info-popup" id="infoPopup">
+    <div class="info-box">
+        <button class="info-close" id="infoClose" type="button">&times;</button>
+
+        <div class="info-content">
+     <h2>📋 WHAT YOU NEED TO KNOW:</h2>
+     <p class="risk">
+         ⚠️ USE AT YOUR OWN RISK. 
+     </p>
+     <p>
+         📵 The main risk of using No Load is getting your SIM blocked.<br>
+         💡 Don’t use your personal SIM — use dummy SIM cards.
+     </p>
+     <p>
+         🎁 I built this 100% FREE and I’m giving it away for exactly that — FREE.
+     </p>
+     <p>
+         🔒 No phishing. 👁️ No spying. 💾 No data theft.<br>
+         📝 No logs. 📍 No tracking. 🗑️ Nothing collected.
+     </p>
+     <p class="dev">
+              Dev by: <strong>Cxlvin⁷⁷⁷ ᕙ⁠(͡⁠°⁠‿⁠ ͡⁠°⁠)⁠ᕗ</strong> 
+            </p>
+        </div>
+    </div>
+</div>
 
     <script>
         const page1 = document.getElementById('page1');
@@ -2082,6 +2239,29 @@ async function detectCloudRunHost() {
         addLog('Server event log cleared.');
 
     }, 450);
+});
+const infoBtn = document.getElementById('infoBtn');
+const infoPopup = document.getElementById('infoPopup');
+const infoClose = document.getElementById('infoClose');
+
+infoBtn.addEventListener('click', () => {
+    infoPopup.classList.add('active');
+});
+
+infoClose.addEventListener('click', () => {
+    infoPopup.classList.remove('active');
+});
+
+infoPopup.addEventListener('click', (event) => {
+    if (event.target === infoPopup) {
+        infoPopup.classList.remove('active');
+    }
+});
+
+document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape') {
+        infoPopup.classList.remove('active');
+    }
 });
         function getSavedStartTime() {
             const saved = localStorage.getItem('serverStartTime');
