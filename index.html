@@ -759,7 +759,7 @@ filter: none !important;
 .log-actions {
     display: flex;
     align-items: center;
-    justify-content: flex-end;
+    justify-content: flex-start;
     gap: 5px;
     width: 100%;
 }
@@ -1857,12 +1857,11 @@ body {
 
     <div class="log-content" id="systemLog"></div>
 
-    <div class="log-bottom">
     <div class="log-actions">
-        <button class="clear-log-btn" id="clearLogBtn">CLEAR</button>
-        <button class="info-btn" id="infoBtn" type="button" aria-label="Information">i</button>
-    </div>
+    <button class="info-btn" id="infoBtn" type="button" aria-label="Information">i</button>
+    <button class="clear-log-btn" id="clearLogBtn">CLEAR</button>
 </div>
+            </div>
 
 </div>
 </div>
